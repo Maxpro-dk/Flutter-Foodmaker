@@ -1,10 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:max_app/food.dart';
-import 'package:max_app/food_db.dart';
-import 'package:max_app/food_detail.dart';
-import 'package:uuid/uuid.dart';
+import 'package:max_app/food_box.dart';
+
+import 'package:hive_flutter/hive_flutter.dart';
 
 class FoodListWidget extends StatefulWidget {
   @override
@@ -20,35 +19,34 @@ class _FoodListWidget extends State<FoodListWidget> {
       appBar: AppBar(
         title: Text("Liste des recettes"),
       ),
-      body: FutureBuilder<List<Food>>(
-        future: FoodDb.instance.foods(),
-        builder: (BuildContext context, AsyncSnapshot<List<Food>> snapshot) {
-          if (snapshot.hasData) {
-            List<Food> foodList = snapshot.requireData;
+      body: ValueListenableBuilder(
+        valueListenable: FoodBox.box.listenable(),
+        builder: (context, Box items, _) {
+          if (!items.isEmpty) {
+            List<String> keys = items.keys.cast<String>().toList();
             return Container(
                 child: ListView.builder(
-                    itemCount: foodList.length,
+                    itemCount: keys.length,
                     itemBuilder: (context, index) {
-                      final thisFood = foodList[index];
+                      final Food thisFood = items.get(keys[index]);
                       return Dismissible(
                           key: Key(thisFood.title),
                           onDismissed: (direction) {
                             setState(() {
-                              foodList.removeAt(index);
-                              FoodDb.instance.delete(thisFood);
+                              FoodBox.box.delete(thisFood.key());
                             });
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                 content: Text(
                                     "${thisFood.title} supprimé avec succès")));
                           },
                           background: Container(
-                            color: Color.fromARGB(116, 233, 134, 127),
-                            margin: EdgeInsets.symmetric(vertical: 4),
+                            color:const Color.fromARGB(116, 233, 134, 127),
+                            margin:const EdgeInsets.symmetric(vertical: 4),
                           ),
                           child: FoodItem(food: thisFood));
                     }));
           } else {
-            return Center(child: Text("oh! aucune recette"));
+            return const Center(child: Text("oh! aucune recette"));
           }
         },
       ),
@@ -98,22 +96,25 @@ class FoodItem extends StatelessWidget {
                       width: 100,
                     )),
               ),
-              Column(
+              Expanded(child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
+                    child: Expanded(child: Text(
                       food.title,
+                      
                       style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                      
+                    )),
                   ),
                   Text(
                     food.author,
                     style: TextStyle(fontStyle: FontStyle.italic),
                   )
                 ],
-              ),
+              ) )
+             ,
             ],
           ),
         ),

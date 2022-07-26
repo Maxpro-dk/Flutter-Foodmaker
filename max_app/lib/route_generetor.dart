@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:max_app/commen_widget.dart';
 import 'package:max_app/food_detail.dart';
 import 'package:max_app/food_list_widget.dart';
 
@@ -20,6 +21,18 @@ class RouteGenerator {
                   CurvedAnimation(parent: animation, curve: Curves.easeInBack);
               return FadeTransition(opacity: animation, child: child);
             });
+
+        case "/comment":
+        return PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                CommentWidget(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              animation =
+                  CurvedAnimation(parent: animation, curve: Curves.easeInBack);
+              return FadeTransition(opacity: animation, child: child);
+            });
+
         break;
 
       default:

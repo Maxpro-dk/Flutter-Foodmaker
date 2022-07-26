@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:max_app/favorite_change_notifier.dart';
 import 'package:max_app/favorite_widget.dart';
 import 'package:max_app/food.dart';
@@ -8,9 +9,9 @@ import 'package:transparent_image/transparent_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class FoodDetail extends StatelessWidget {
-  final  food;
+  final food;
 
-  FoodDetail({Key? key,required this.food}) : super(key: key);
+  FoodDetail({Key? key, required this.food}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     Widget titleSection = Container(
@@ -47,7 +48,15 @@ class FoodDetail extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _btnColumn(Colors.blueGrey, Icons.comment, "comment"),
+          TextButton(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.transparent)
+            ),
+              onPressed: () {
+                Navigator.pushNamed(context, "/comment");
+              },
+              child: _btnColumn(Colors.blueGrey, Icons.comment, "comment")),
           _btnColumn(Colors.blueGrey, Icons.share, "share")
         ],
       ),
@@ -56,10 +65,7 @@ class FoodDetail extends StatelessWidget {
     Widget describeSection = Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       margin: const EdgeInsets.only(bottom: 32),
-      child: Text(
-        food.description,
-        softWrap: true,
-      ),
+      child: Html(data: food.description),
     );
     // make sure that  you add the folder and image path to yaml file
     Widget image_one = Container(
@@ -92,22 +98,24 @@ class FoodDetail extends StatelessWidget {
       height: 400,
       width: 400,
       padding: EdgeInsets.symmetric(horizontal: 8),
-      child:Hero(tag: food.title, child:  CachedNetworkImage(
-        imageUrl: food.image,
-        placeholder: (context, url) {
-          return Container(
+      child: Hero(
+          tag: food.title,
+          child: CachedNetworkImage(
+            imageUrl: food.image,
+            placeholder: (context, url) {
+              return Container(
+                height: 400,
+                width: 400,
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            },
+            errorWidget: (context, url, error) => Icon(Icons.error),
             height: 400,
             width: 400,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        },
-        errorWidget: (context, url, error) => Icon(Icons.error),
-        height: 400,
-        width: 400,
-        fit: BoxFit.cover,
-      )),
+            fit: BoxFit.cover,
+          )),
     );
 
     Widget image_with_load = Stack(
@@ -124,8 +132,7 @@ class FoodDetail extends StatelessWidget {
     );
 
     Widget food_detail = ChangeNotifierProvider(
-      create: (context) =>
-          FavoriteChangeNotifier(food),
+      create: (context) => FavoriteChangeNotifier(food),
       child: Scaffold(
           appBar: AppBar(
             title: const Text(" Food maker"),
